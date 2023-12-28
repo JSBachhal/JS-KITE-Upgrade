@@ -2168,8 +2168,8 @@
                     "text-green": t.netPnl > 0,
                     "text-red": t.netPnl < 0
                 },
-            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t" )]), t._v(" "),
-             s("td", {
+            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t")]), t._v(" "),
+            s("td", {
                 staticClass: "text-right",
                 class: {
                     "text-green": t.realNetPnlJSMode > 0,
@@ -2179,7 +2179,7 @@
                     colspan: "2"
                 }
             },
-            [t.realNetPnlJSMode > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.realNetPnlJSMode, 2, !0)) + "\n\t\t\t\t\t" )]
+                [t.realNetPnlJSMode > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.realNetPnlJSMode, 2, !0)) + "\n\t\t\t\t\t")]
             )])])], 1) : t._e()]) : t._e(), t._v(" "), !t.minimal && t.positionsConstraints.isDayPositions ? s("section", {
                 staticClass: "day-positions table-wrapper"
             }, [s("header", {
@@ -3091,11 +3091,11 @@
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
-                        const symbol= h.tradingsymbol;
-                        const buy_quantity= h.buy_quantity;
-                        const sell_quantity= h.sell_quantity;
+                        const symbol = h.tradingsymbol;
+                        const buy_quantity = h.buy_quantity;
+                        const sell_quantity = h.sell_quantity;
 
-                        
+
 
                         if (isNaN(qty) || (isNaN(bp) && isNaN(sp))) {
                             alert('error');
@@ -3403,17 +3403,16 @@
                             }
                     },
                     calCustomExitPrice(buyOrSell, n, t) {
-
-
                         let exitPrice = 0;
                         if (buyOrSell === 'BUY') {
-                            if (t.JS_REAL_PL?.isInProfit) return n;
-                            else {
-                                if (t.buy_quantity > 0) {
-                                    exitPrice = this.getOrderDetailsFromOrders(t);
-                                    exitPrice =
-                                        (exitPrice - (t.JS_REAL_PL?.breakeven || 0))
-                                } else {
+
+                            if (t.buy_quantity > 0) {
+                                exitPrice = this.getOrderDetailsFromOrders(t);
+                                exitPrice =
+                                    (exitPrice - (t.JS_REAL_PL?.breakeven || 0))
+                            } else {
+                                if (t.JS_REAL_PL?.isInProfit) return n;
+                                else {
                                     exitPrice =
                                         (t.sell_price - (t.JS_REAL_PL?.breakeven || 0))
                                 }
@@ -3423,13 +3422,14 @@
                         }
 
                         if (buyOrSell === 'SELL') {
-                            if (t.JS_REAL_PL?.isInProfit) return n;
-                            else {
-                                if (t.sell_quantity > 0) {
-                                    exitPrice = this.getOrderDetailsFromOrders(t);
-                                    exitPrice =
-                                        (t.exitPrice + (t.JS_REAL_PL?.breakeven || 0))
-                                } else {
+
+                            if (t.sell_quantity > 0) {
+                                exitPrice = this.getOrderDetailsFromOrders(t);
+                                exitPrice =
+                                    (t.exitPrice + (t.JS_REAL_PL?.breakeven || 0))
+                            } else {
+                                if (t.JS_REAL_PL?.isInProfit) return n;
+                                else {
                                     exitPrice =
                                         (t.buy_price + (t.JS_REAL_PL?.breakeven || 0))
                                 }
@@ -3444,20 +3444,23 @@
                                 && f.tradingsymbol === t.tradingsymbol)
                                 .reverse();
 
-                                let ordersToLoop = t.quantity;
-                                let averagePrice = 0;
-                                if(completedOrders?.length){
-                                    for (const order of completedOrders) {
-                                        averagePrice += order.average_price;
-                                        ordersToLoop -= order.filled_quantity;
-                                        if(ordersToLoop === 0){
-                                            break;
-                                        }
+                            let ordersToLoop = Math.abs(t.quantity);
+                            const lotSize = t.tradingsymbol.includes("BANKNIFTY") ? 15 : 50;
+                            let numberOfOrders = ordersToLoop / lotSize;
+                            let averagePrice = 0;
+                            if (completedOrders?.length) {
+                                for (const order of completedOrders) {
+                                    const multiplier = order.filled_quantity / lotSize;
+                                    averagePrice += (order.average_price * multiplier);
+                                    ordersToLoop -= order.filled_quantity;
+                                    if (ordersToLoop === 0) {
+                                        break;
                                     }
-
-                                    return averagePrice;
                                 }
-                                // console.log(completedOrders);
+
+                                return averagePrice / numberOfOrders;
+                            }
+                            // console.log(completedOrders);
 
                         }
                         return t.averagePrice;
