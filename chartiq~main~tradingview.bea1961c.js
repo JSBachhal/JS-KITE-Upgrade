@@ -2167,12 +2167,20 @@
                 class: {
                     "text-green": t.netPnl > 0,
                     "text-red": t.netPnl < 0
-                }
-            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t" + `RealPNL  ${t.realNetPnlJSMode}`)]), t._v(" "), s("td", {
+                },
+            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t" )]), t._v(" "),
+             s("td", {
+                staticClass: "text-right",
+                class: {
+                    "text-green": t.realNetPnlJSMode > 0,
+                    "text-red": t.realNetPnlJSMode < 0
+                },
                 attrs: {
                     colspan: "2"
                 }
-            })])])], 1) : t._e()]) : t._e(), t._v(" "), !t.minimal && t.positionsConstraints.isDayPositions ? s("section", {
+            },
+            [t.realNetPnlJSMode > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.realNetPnlJSMode, 2, !0)) + "\n\t\t\t\t\t" )]
+            )])])], 1) : t._e()]) : t._e(), t._v(" "), !t.minimal && t.positionsConstraints.isDayPositions ? s("section", {
                 staticClass: "day-positions table-wrapper"
             }, [s("header", {
                 staticClass: "row data-table-header"
@@ -3083,6 +3091,11 @@
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
+                        const symbol= h.tradingsymbol;
+                        const buy_quantity= h.buy_quantity;
+                        const sell_quantity= h.sell_quantity;
+
+                        
 
                         if (isNaN(qty) || (isNaN(bp) && isNaN(sp))) {
                             alert('error');
