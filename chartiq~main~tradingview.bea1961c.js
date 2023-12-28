@@ -1912,7 +1912,7 @@
                     "text-green": t.netPnl > 0,
                     "text-red": t.netPnl < 0
                 }
-            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t")])])], 2) : t._e(), t._v(" "), t.netData && t.netData.length > 0 && !t.isMobile ? s("div", [s("su-table", {
+            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t" + `RealPNL  ${t.realNetPnlJSMode}`)])])], 2) : t._e(), t._v(" "), t.netData && t.netData.length > 0 && !t.isMobile ? s("div", [s("su-table", {
                 staticClass: "fold-header sticky",
                 attrs: {
                     uid: "uid",
@@ -2168,7 +2168,7 @@
                     "text-green": t.netPnl > 0,
                     "text-red": t.netPnl < 0
                 }
-            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t")]), t._v(" "), s("td", {
+            }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t" + `RealPNL  ${t.realNetPnlJSMode}`)]), t._v(" "), s("td", {
                 attrs: {
                     colspan: "2"
                 }
@@ -3026,6 +3026,10 @@
                     openPositionsCount() {
                         if (this.positionsConstraints.isData)
                             return this.positions.net.filter(t => 0 !== t.quantity).length
+                    },
+                    realNetPnlJSMode() {
+                        const realPnl = this.netData && this.netData.length > 0 ? this.netData.reduce((t, e) => t + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                        return parseFloat(realPnl).toFixed(2);
                     },
                     netPnl() {
                         return this.netData && this.netData.length > 0 ? this.netData.reduce((t, e) => t + e.pnl, 0) : 0
