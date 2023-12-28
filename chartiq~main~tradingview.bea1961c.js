@@ -3403,25 +3403,64 @@
                             }
                     },
                     calCustomExitPrice(buyOrSell, n, t) {
+
+
+                        let exitPrice = 0;
                         if (buyOrSell === 'BUY') {
                             if (t.JS_REAL_PL?.isInProfit) return n;
                             else {
-                                let minPrice =
-                                    (t.sell_price - (t.JS_REAL_PL?.breakeven || 0))
+                                if (t.buy_quantity > 0) {
+                                    exitPrice = this.getOrderDetailsFromOrders(t);
+                                    exitPrice =
+                                        (exitPrice - (t.JS_REAL_PL?.breakeven || 0))
+                                } else {
+                                    exitPrice =
+                                        (t.sell_price - (t.JS_REAL_PL?.breakeven || 0))
+                                }
 
-                                return minPrice
+                                return exitPrice
                             }
                         }
 
                         if (buyOrSell === 'SELL') {
                             if (t.JS_REAL_PL?.isInProfit) return n;
                             else {
-                                let minPrice =
-                                    (t.buy_price + (t.JS_REAL_PL?.breakeven || 0))
-
-                                return minPrice
+                                if (t.sell_quantity > 0) {
+                                    exitPrice = this.getOrderDetailsFromOrders(t);
+                                    exitPrice =
+                                        (t.exitPrice + (t.JS_REAL_PL?.breakeven || 0))
+                                } else {
+                                    exitPrice =
+                                        (t.buy_price + (t.JS_REAL_PL?.breakeven || 0))
+                                }
+                                return exitPrice
                             }
                         }
+                    },
+                    getOrderDetailsFromOrders(t) {
+                        if (window.ORDER_INFO) {
+                            const completedOrders = window.ORDER_INFO.data.filter(f => f.status === "COMPLETE" &&
+                                f.instrument_token === t.instrument_token
+                                && f.tradingsymbol === t.tradingsymbol)
+                                .reverse();
+
+                                let ordersToLoop = t.quantity;
+                                let averagePrice = 0;
+                                if(completedOrders?.length){
+                                    for (const order of completedOrders) {
+                                        averagePrice += order.average_price;
+                                        ordersToLoop -= order.filled_quantity;
+                                        if(ordersToLoop === 0){
+                                            break;
+                                        }
+                                    }
+
+                                    return averagePrice;
+                                }
+                                // console.log(completedOrders);
+
+                        }
+                        return t.averagePrice;
                     },
                     placeOrder(t) {
                         this.$events.emit(f["b"].EVENTS.ORDER_PLACE, t)
