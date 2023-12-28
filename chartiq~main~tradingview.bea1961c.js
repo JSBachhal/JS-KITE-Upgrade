@@ -2095,13 +2095,7 @@
                             class: [e.row.style.pnl, t.positionsColumnStyles.pnl]
                         }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "), s("td", {
                             class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent]
-                        }, 
-                        [0 !== e.row.formatted.averagePrice 
-                            ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) 
-                            : s("span", [t._v("N/A")])
-                        ]
-                            
-                            )]
+                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
                     }
                 }], null, !1, 759144339)
             }, [s("span", {
@@ -3000,7 +2994,8 @@
                             field: "changePercent",
                             sort: !0,
                             class: this.positionsColumnStyles.changePercent
-                        }],
+                        }
+                    ],
                         this.$events.on("refetchData:" + h["b"], this.fetchPositions)
                 },
                 beforeDestroy() {
@@ -3092,7 +3087,7 @@
                         this.updateTimer && (clearInterval(this.updateTimer),
                             this.updateTimer = null)
                     },
-                    calculate_ExactPL(bp, sp, qty, h) {
+                    calculate_ExactPL(bp, sp, qty, h, _unBookedPNL) {
                         // console.log(h.tradingsymbol,`${qty ? 'OPEN : ':'CLOSED : '}`, h)
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
@@ -3146,14 +3141,14 @@
                         let netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-                        const unBookedPNL = h.JS_UNBOOKED_PRICE? this.calculate_ExactPL(
-                            h.quantity > 0 ? h.JS_UNBOOKED_PRICE : 0,
-                            h.quantity < 0 ? h.JS_UNBOOKED_PRICE : 0,
-                            h.quantity, h) : null;
+                        const unBookedPNL=_unBookedPNL.JS_UNBOOKED_PRICE? this.calculate_ExactPL(
+                            h.quantity>0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
+                            h.quantity<0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
+                            h.quantity,h):null;
 
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0,unBookedPNL };
                     },
-                    cal_futures(bp, sp, qty, h) {
+                    cal_futures(bp, sp, qty, h,_unBookedPNL) {
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
@@ -3197,10 +3192,11 @@
                         var netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-                        const unBookedPNL =  h.JS_UNBOOKED_PRICE?  this.calculate_ExactPL(
-                            h.quantity > 0 ? h.JS_UNBOOKED_PRICE : 0,
-                            h.quantity < 0 ? h.JS_UNBOOKED_PRICE : 0,
-                            h.quantity, h):null;
+                        const unBookedPNL=_unBookedPNL.JS_UNBOOKED_PRICE? this.calculate_ExactPL(
+                            h.quantity>0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
+                            h.quantity<0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
+                            h.quantity,h):null;
+
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0,unBookedPNL };
                     },
                     initUpdateTimer() {
@@ -3261,9 +3257,9 @@
                                     h.JS_REAL_PL = h.tradingsymbol.includes('FUT')
                                     ?
                                     this.cal_futures(a.buy_price || (u && u.lastPrice || a.last_price), a.sell_price
-                                        || (u && u.lastPrice || a.last_price), a.quantity, a)
+                                        || (u && u.lastPrice || a.last_price), a.quantity, a,h)
                                     : this.calculate_ExactPL(a.buy_price || (u && u.lastPrice || a.last_price), a.sell_price
-                                        || (u && u.lastPrice || a.last_price), a.quantity, a),
+                                        || (u && u.lastPrice || a.last_price), a.quantity, a,h),
                                 h.uid = e,
                                 h.pnl = Object(o["c"])(r, 2),
                                 h.m2m = Object(o["c"])(l, 2),
@@ -3282,7 +3278,7 @@
                                     lastPrice: Object(o["b"])(d, f, !0),
                                     closePrice: Object(o["b"])(a.close_price, f, !0),
                                     // changePercent: Object(o["b"])(i, 2, !0) + `%  ${h.JS_REAL_PL?.netProfit || 0}`,
-                                    changePercent: h.JS_REAL_PL?.netProfit || 0,
+                                    changePercent: h.JS_REAL_PL?.unBookedPNL?.netProfit || h.JS_REAL_PL?.netProfit || 0,
                                     buyPrice: Object(o["b"])(a.buy_price, f, !0),
                                     sellPrice: Object(o["b"])(a.sell_price, f, !0),
                                     buyValue: Object(o["b"])(a.buy_value, 2, !0),
@@ -3485,6 +3481,8 @@
 
                                 return averagePrice / numberOfOrders;
                             }
+                            // console.log(completedOrders);
+
                         }
                         return t.averagePrice;
                     },
