@@ -2095,7 +2095,13 @@
                             class: [e.row.style.pnl, t.positionsColumnStyles.pnl]
                         }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "), s("td", {
                             class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent]
-                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
+                        }, 
+                        [0 !== e.row.formatted.averagePrice 
+                            ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) 
+                            : s("span", [t._v("N/A")])
+                        ]
+                            
+                            )]
                     }
                 }], null, !1, 759144339)
             }, [s("span", {
@@ -3140,8 +3146,12 @@
                         let netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
+                        const unBookedPNL = h.JS_UNBOOKED_PRICE? this.calculate_ExactPL(
+                            h.quantity > 0 ? h.JS_UNBOOKED_PRICE : 0,
+                            h.quantity < 0 ? h.JS_UNBOOKED_PRICE : 0,
+                            h.quantity, h) : null;
 
-                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
+                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0,unBookedPNL };
                     },
                     cal_futures(bp, sp, qty, h) {
                         bp = parseFloat(bp.toString());
@@ -3187,8 +3197,11 @@
                         var netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-
-                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
+                        const unBookedPNL =  h.JS_UNBOOKED_PRICE?  this.calculate_ExactPL(
+                            h.quantity > 0 ? h.JS_UNBOOKED_PRICE : 0,
+                            h.quantity < 0 ? h.JS_UNBOOKED_PRICE : 0,
+                            h.quantity, h):null;
+                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0,unBookedPNL };
                     },
                     initUpdateTimer() {
                         this.clearUpdateTimer();
@@ -3244,7 +3257,8 @@
                                 0 !== a.average_price && (i = (d - a.average_price) / a.average_price * 100),
                                 0 === a.average_price && 0 !== a.quantity && (r = 0,
                                     l = 0),
-                                h.JS_REAL_PL = h.tradingsymbol.includes('FUT')
+                                    h.JS_UNBOOKED_PRICE = this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL'),
+                                    h.JS_REAL_PL = h.tradingsymbol.includes('FUT')
                                     ?
                                     this.cal_futures(a.buy_price || (u && u.lastPrice || a.last_price), a.sell_price
                                         || (u && u.lastPrice || a.last_price), a.quantity, a)
@@ -3407,9 +3421,10 @@
                         if (buyOrSell === 'BUY') {
 
                             if (t.buy_quantity > 0) {
-                                exitPrice = this.getOrderDetailsFromOrders(t);
+                                sellPrice = this.getOrderDetailsFromOrders(t, 'SELL');
+                                const brokerageInfo = this.getBrokerageInfo(0, sellPrice, t);
                                 exitPrice =
-                                    (exitPrice - (t.JS_REAL_PL?.breakeven || 0))
+                                    (sellPrice - (brokerageInfo?.breakeven || 0))
                             } else {
                                 if (t.JS_REAL_PL?.isInProfit) return n;
                                 else {
@@ -3424,9 +3439,10 @@
                         if (buyOrSell === 'SELL') {
 
                             if (t.sell_quantity > 0) {
-                                exitPrice = this.getOrderDetailsFromOrders(t);
+                                buyPrice = this.getOrderDetailsFromOrders(t, 'BUY');
+                                const brokerageInfo = this.getBrokerageInfo(buyPrice, 0, t);
                                 exitPrice =
-                                    (t.exitPrice + (t.JS_REAL_PL?.breakeven || 0))
+                                    (t.buyPrice + (brokerageInfo?.breakeven || 0))
                             } else {
                                 if (t.JS_REAL_PL?.isInProfit) return n;
                                 else {
@@ -3437,9 +3453,18 @@
                             }
                         }
                     },
-                    getOrderDetailsFromOrders(t) {
+                    getBrokerageInfo(buy_price, sell_price, trade) {
+                        const brkInfo = h.tradingsymbol.includes('FUT')
+                            ?
+                            this.cal_futures(buy_price, sell_price, trade.quantity, trade)
+                            : this.calculate_ExactPL(buy_price, sell_price, trade.quantity, trade);
+
+                        return brkInfo;
+                    },
+                    getOrderDetailsFromOrders(t, transaction_type) {
                         if (window.ORDER_INFO) {
                             const completedOrders = window.ORDER_INFO.data.filter(f => f.status === "COMPLETE" &&
+                                f.transaction_type === transaction_type &&
                                 f.instrument_token === t.instrument_token
                                 && f.tradingsymbol === t.tradingsymbol)
                                 .reverse();
@@ -3460,8 +3485,6 @@
 
                                 return averagePrice / numberOfOrders;
                             }
-                            // console.log(completedOrders);
-
                         }
                         return t.averagePrice;
                     },
