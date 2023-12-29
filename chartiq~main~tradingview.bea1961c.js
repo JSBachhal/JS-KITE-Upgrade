@@ -2106,26 +2106,26 @@
                                     s("tr", [
                                         s("td",
                                             [
-                                                s("span", [t._v("UnBooked = ")]),
-                                                s("span", { class: [e.row.style.JS_UNBOOKED_PNL] }, [t._v(e.row.JS_UNBOOKED_PNL)]),
+                                                s("span",{ class: {"min-width-JS":!0} }, [t._v("UnBooked")]),
+                                                s("span", { class: [e.row.style.JS_UNBOOKED_PNL] }, [t._v(' = '+ e.row.JS_UNBOOKED_PNL)]),
                                             ])
                                     ]),
                                     s("tr", [
                                         s("td",
                                             [
-                                                s("span", [t._v("Booked      = ")]),
+                                                s("span", { class: {"min-width-JS":!0} },[t._v("Booked")]),
                                                 s("span",
                                                     { class: [e.row.style.JS_BOOKED_PNL] },
-                                                    [t._v(e.row.JS_BOOKED_PNL?.netProfit || '0')]),
+                                                    [t._v(' = '+( e.row.JS_BOOKED_PNL?.netProfit || '0'))]),
                                             ]),
                                     ]),
                                     s("tr", [
                                         s("td",
                                             [
-                                                s("span", [t._v("Total  PNL  = ")]),
+                                                s("span", { class: {"min-width-JS":!0} },[t._v("Total  PNL")]),
                                                 s("span",
                                                     { class: [e.row.style.JS_TOTAL_PNL] },
-                                                    [t._v(e.row.formatted.changePercent)]),
+                                                    [t._v(' = '+ e.row.formatted.changePercent)]),
                                             ]),
                                     ])
                                 ]
