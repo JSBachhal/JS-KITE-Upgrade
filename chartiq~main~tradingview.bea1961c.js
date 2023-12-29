@@ -2099,24 +2099,40 @@
                         }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]),
                         t._v(" "),
                         s("td", {
-                            class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent]
-                        }, [0 !== e.row.formatted.averagePrice ?
+                        }, [
                             s("table",
+                            {class:{'change-percent':!0}},
                                 [
                                     s("tr", [
-                                        s("td", [t._v('UnBooked = ' + e.row.JS_UNBOOKED_PNL)])
+                                        s("td",
+                                            [
+                                                s("span", [t._v("UnBooked = ")]),
+                                                s("span", { class: [e.row.style.JS_UNBOOKED_PNL] }, [t._v(e.row.JS_UNBOOKED_PNL)]),
+                                            ])
                                     ]),
                                     s("tr", [
-                                        s("td", [t._v('Booked      = ' + e.row.JS_BOOKED_PNL?.netProfit)]),
+                                        s("td",
+                                            [
+                                                s("span", [t._v("Booked      = ")]),
+                                                s("span",
+                                                    { class: [e.row.style.JS_BOOKED_PNL] },
+                                                    [t._v(e.row.JS_BOOKED_PNL?.netProfit || '0')]),
+                                            ]),
                                     ]),
                                     s("tr", [
-                                        s("td", [t._v('Total  PNL  = ' + e.row.formatted.changePercent)]),
+                                        s("td",
+                                            [
+                                                s("span", [t._v("Total  PNL  = ")]),
+                                                s("span",
+                                                    { class: [e.row.style.JS_TOTAL_PNL] },
+                                                    [t._v(e.row.formatted.changePercent)]),
+                                            ]),
                                     ])
                                 ]
 
                             )
-
-                            : s("span", [t._v("N/A")])])]
+                        
+                        ])]
                     }
                 }], null, !1, 759144339)
             }, [s("span", {
@@ -2190,17 +2206,48 @@
                     "text-red": t.netPnl < 0
                 },
             }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t")]), t._v(" "),
-            s("td", {
-                staticClass: "text-right",
-                class: {
-                    "text-green": t.realNetPnlJSMode > 0,
-                    "text-red": t.realNetPnlJSMode < 0
+                s("td", {
+                    staticClass: "text-right",
+                    class: {
+                        "text-green": t.realNetPnlJSMode > 0,
+                        "text-red": t.realNetPnlJSMode < 0,
+                        "change-percent ":!0
+                    },
+                    attrs: {
+                        colspan: "2"
+                    }
                 },
-                attrs: {
-                    colspan: "2"
-                }
-            },
-                [t.realNetPnlJSMode > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.realNetPnlJSMode, 2, !0)) + "\n\t\t\t\t\t")]
+                    [s("table",
+                        [
+                            s("tr", [
+                                s("td", {
+                                    class: {
+                                        "text-green": t.realNetUnBookedPnl > 0,
+                                        "text-red": t.realNetUnBookedPnl < 0,
+                                    }
+                                }, [t._v('UnBooked = ' + t.realNetUnBookedPnl)])
+                            ]),
+                            s("tr", [
+                                s("td", {
+                                    class: {
+                                        "text-green": t.realNetBookedPnl > 0,
+                                        "text-red": t.realNetBookedPnl < 0,
+                                    }
+                                }, [t._v('Booked      = ' + t.realNetBookedPnl)]),
+                            ]),
+                            s("tr", [
+                                s("td", {
+                                    class: {
+                                        "text-green": t.realNetTotalPnl > 0,
+                                        "text-red": t.realNetTotalPnl < 0,
+                                    }
+                                }, [t._v('Total  PNL  = ' + t.realNetTotalPnl)]),
+                            ])
+                        ]
+                    )]
+
+
+                
             )])])], 1) : t._e()]) : t._e(), t._v(" "), !t.minimal && t.positionsConstraints.isDayPositions ? s("section", {
                 staticClass: "day-positions table-wrapper"
             }, [s("header", {
@@ -3057,7 +3104,20 @@
                         if (this.positionsConstraints.isData)
                             return this.positions.net.filter(t => 0 !== t.quantity).length
                     },
-                    realNetPnlJSMode() {
+                    
+                    realNetUnBookedPnl() {
+                        let realPnl = this.netData && this.netData.length > 0
+                            ? this.netData.reduce((t, e) => t  + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                        realPnl = parseFloat(realPnl).toFixed(2);
+                        return realPnl;
+                    },
+                    realNetBookedPnl() {
+                        let realPnl = this.netData && this.netData.length > 0
+                            ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) , 0) : 0
+                        realPnl = parseFloat(realPnl).toFixed(2);
+                        return realPnl;
+                    },
+                    realNetTotalPnl() {
                         let realPnl = this.netData && this.netData.length > 0
                             ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
@@ -3279,10 +3339,22 @@
                                 , a.quantity, a, h) : 0;
                         const JS_UNBOOKED_PNL = JS_REAL_PL?.netProfit || 0;
 
-                        h.JS_UNBOOKED_PRICE=JS_UNBOOKED_PRICE;
-                        h.JS_BOOKED_PNL=JS_BOOKED_PNL;
-                        h.JS_UNBOOKED_PNL=JS_UNBOOKED_PNL;
-                        h.JS_REAL_PL=JS_REAL_PL;
+                        h.JS_UNBOOKED_PRICE = JS_UNBOOKED_PRICE;
+                        h.JS_BOOKED_PNL = JS_BOOKED_PNL;
+                        h.JS_UNBOOKED_PNL = JS_UNBOOKED_PNL;
+                        h.JS_REAL_PL = JS_REAL_PL;
+
+                        h.formatted.changePercent = this.getTotalPNLForTrade(h);
+                        h.style.JS_BOOKED_PNL = { ...this.textStyle(JS_BOOKED_PNL?.netProfit || 0) };
+                        h.style.JS_UNBOOKED_PNL = { ...this.textStyle(JS_UNBOOKED_PNL || 0) };
+                        h.style.JS_TOTAL_PNL = { ...this.textStyle((h.JS_BOOKED_PNL?.netProfit || 0) + (JS_UNBOOKED_PNL || 0)) };
+
+
+                        h.style.changePercent= {
+                            "change-percent": !0
+                        };
+
+
                         return { JS_UNBOOKED_PRICE, JS_BOOKED_PNL, JS_UNBOOKED_PNL, JS_REAL_PL }
                     },
                     updatePositions(t, e) {
@@ -3305,7 +3377,7 @@
                                 0 !== a.average_price && (i = (d - a.average_price) / a.average_price * 100),
                                 0 === a.average_price && 0 !== a.quantity && (r = 0,
                                     l = 0),
-                                        {...this.getJSCustomProps(h,u,a)}
+                                        
                                 h.uid = e,
                                 h.pnl = Object(o["c"])(r, 2),
                                 h.m2m = Object(o["c"])(l, 2),
@@ -3323,7 +3395,7 @@
                                     m2m: Object(o["b"])(l, 2, !0),
                                     lastPrice: Object(o["b"])(d, f, !0),
                                     closePrice: Object(o["b"])(a.close_price, f, !0),
-                                    changePercent: this.getTotalPNLForTrade(h),
+                                    changePercent:  Object(o["b"])(a.changePercent, f, !0),
                                     buyPrice: Object(o["b"])(a.buy_price, f, !0),
                                     sellPrice: Object(o["b"])(a.sell_price, f, !0),
                                     buyValue: Object(o["b"])(a.buy_value, 2, !0),
@@ -3350,6 +3422,7 @@
                                         ...this.quantityStyle(a)
                                     }
                                 },
+                                {...this.getJSCustomProps(h,u,a)},
                                 h.disableSelect = !1,
                                 0 !== a.quantity && "BO" !== a.product && "CO" !== a.product || (h.disableSelect = !0),
 
