@@ -2087,15 +2087,36 @@
                             }
                         })], 1)], 2) : t._e()], 1)], 1), t._v(" "), s("td", {
                             class: [e.row.style.quantity, t.positionsColumnStyles.quantity]
-                        }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.quantity) + "\n\t\t\t\t\t")]), t._v(" "), s("td", {
+                        }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.quantity) + "\n\t\t\t\t\t")]), t._v(" "),
+                        s("td", {
                             class: [e.row.style.averagePrice, t.positionsColumnStyles.averagePrice]
-                        }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.formatted.averagePrice) + "\n\t\t\t\t\t")]), t._v(" "), s("td", {
+                        }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.formatted.averagePrice) + "\n\t\t\t\t\t")]), t._v(" "),
+                        s("td", {
                             class: [e.row.style.lastPrice, t.positionsColumnStyles.lastPrice]
-                        }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.formatted.lastPrice) + "\n\t\t\t\t\t")]), t._v(" "), s("td", {
+                        }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.formatted.lastPrice) + "\n\t\t\t\t\t")]), t._v(" "),
+                        s("td", {
                             class: [e.row.style.pnl, t.positionsColumnStyles.pnl]
-                        }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "), s("td", {
+                        }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]),
+                        t._v(" "),
+                        s("td", {
                             class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent]
-                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
+                        }, [0 !== e.row.formatted.averagePrice ?
+                            s("table",
+                                [
+                                    s("tr", [
+                                        s("td", [t._v('UnBooked = ' + e.row.JS_UNBOOKED_PNL)])
+                                    ]),
+                                    s("tr", [
+                                        s("td", [t._v('Booked      = ' + e.row.JS_BOOKED_PNL?.netProfit)]),
+                                    ]),
+                                    s("tr", [
+                                        s("td", [t._v('Total  PNL  = ' + e.row.formatted.changePercent)]),
+                                    ])
+                                ]
+
+                            )
+
+                            : s("span", [t._v("N/A")])])]
                     }
                 }], null, !1, 759144339)
             }, [s("span", {
@@ -2304,8 +2325,8 @@
                         }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.formatted.lastPrice) + "\n\t\t\t\t\t")]), t._v(" "), s("td", {
                             class: [e.row.style.pnl, t.positionsColumnStyles.pnl]
                         }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "), s("td", {
-                            class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent]
-                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
+                            class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent],
+                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.JS_UNBOOKED_PNL + ' ' + e.row.JS_BOOKED_PNL?.netProfit + '=' + e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
                     }
                 }], null, !1, 1032869863)
             }, [t._v(" "), s("tr", {
@@ -3037,9 +3058,10 @@
                             return this.positions.net.filter(t => 0 !== t.quantity).length
                     },
                     realNetPnlJSMode() {
-                        const realPnl = this.netData && this.netData.length > 0
+                        let realPnl = this.netData && this.netData.length > 0
                             ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
-                        return parseFloat(realPnl).toFixed(2);
+                        realPnl = parseFloat(realPnl).toFixed(2);
+                        return realPnl;
                     },
                     netPnl() {
                         return this.netData && this.netData.length > 0 ? this.netData.reduce((t, e) => t + e.pnl, 0) : 0
@@ -3088,9 +3110,44 @@
                         this.updateTimer && (clearInterval(this.updateTimer),
                             this.updateTimer = null)
                     },
+
+                    initUpdateTimer() {
+                        this.clearUpdateTimer();
+                        let t = 3e3;
+                        this.positions && this.positions.net && this.positions.net.length > 100 && (t = 6e4),
+                            this.updateTimer = setInterval(() => {
+                                this.updateDayPositions(this.ticks),
+                                    this.updateNetPositions(this.ticks)
+                            }
+                                , t)
+                    },
+                    updateAllPositions(t) {
+                        let e = [];
+                        for (let s of t.net)
+                            e.push(s.instrument_token);
+                        this.subscribedTokens = e,
+                            this.ticker.subscribe(this.subscribedTokens, h["b"]),
+                            this.ticker.setMode(this.ticker.modeLTP, this.subscribedTokens, h["b"]),
+                            t && t.net && t.net.length > this.maxItems && (this.performanceMode = !0,
+                                this.initUpdateTimer()),
+                            this.updateDayPositions(this.ticks),
+                            this.updateNetPositions(this.ticks)
+                    },
+                    updateDayPositions(t) {
+                        this.positions && this.positions.day && this.positions.day.length > 0 && (this.dayData = this.updatePositions(t, this.positions.day))
+                    },
+                    updateNetPositions(t) {
+                        this.positions && this.positions.net && this.positions.net.length > 0 && (this.netData = this.updatePositions(t, this.positions.net))
+                    },
+                    getInstrument(t) {
+                        let e = this.instruments[t.instrument_token];
+                        return e || (e = this.instrumentManager.get(t.tradingsymbol, null, t.exchange),
+                            this.instruments[t.instrument_token] = e),
+                            e
+                    },
                     calculate_ExactPL(bp, sp, qty, h, _unBookedPNL) {
                         // console.log(h.tradingsymbol,`${qty ? 'OPEN : ':'CLOSED : '}`, h)
-                        if(h.tradingsymbol.includes('FUT')){
+                        if (h.tradingsymbol.includes('FUT')) {
                             return this.cal_futures(bp, sp, qty, h, _unBookedPNL);
                         }
                         bp = parseFloat(bp.toString());
@@ -3145,7 +3202,7 @@
                         let netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-                        
+
 
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
                     },
@@ -3193,43 +3250,9 @@
                         var netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-                       
+
 
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
-                    },
-                    initUpdateTimer() {
-                        this.clearUpdateTimer();
-                        let t = 3e3;
-                        this.positions && this.positions.net && this.positions.net.length > 100 && (t = 6e4),
-                            this.updateTimer = setInterval(() => {
-                                this.updateDayPositions(this.ticks),
-                                    this.updateNetPositions(this.ticks)
-                            }
-                                , t)
-                    },
-                    updateAllPositions(t) {
-                        let e = [];
-                        for (let s of t.net)
-                            e.push(s.instrument_token);
-                        this.subscribedTokens = e,
-                            this.ticker.subscribe(this.subscribedTokens, h["b"]),
-                            this.ticker.setMode(this.ticker.modeLTP, this.subscribedTokens, h["b"]),
-                            t && t.net && t.net.length > this.maxItems && (this.performanceMode = !0,
-                                this.initUpdateTimer()),
-                            this.updateDayPositions(this.ticks),
-                            this.updateNetPositions(this.ticks)
-                    },
-                    updateDayPositions(t) {
-                        this.positions && this.positions.day && this.positions.day.length > 0 && (this.dayData = this.updatePositions(t, this.positions.day))
-                    },
-                    updateNetPositions(t) {
-                        this.positions && this.positions.net && this.positions.net.length > 0 && (this.netData = this.updatePositions(t, this.positions.net))
-                    },
-                    getInstrument(t) {
-                        let e = this.instruments[t.instrument_token];
-                        return e || (e = this.instrumentManager.get(t.tradingsymbol, null, t.exchange),
-                            this.instruments[t.instrument_token] = e),
-                            e
                     },
                     updatePositions(t, e) {
                         // console.clear() ;
@@ -3252,11 +3275,12 @@
                                 0 === a.average_price && 0 !== a.quantity && (r = 0,
                                     l = 0),
                                 h.JS_UNBOOKED_PRICE = h.average_price
-                                ? this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL')
-                                : 0,
-                                h.isBuyOrder=a.quantity > 0,
-                                h.isSellOrder=a.quantity < 0,
+                                    ? this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL')
+                                    : 0,
+                                h.isBuyOrder = a.quantity > 0,
+                                h.isSellOrder = a.quantity < 0,
                                 h.JS_BOOKED_PNL = this.getBookedPNLDeailsFromOrderDetails(h),
+
                                 h.JS_REAL_PL = h.JS_UNBOOKED_PRICE
                                     ? this.calculate_ExactPL(
                                         h.isBuyOrder
@@ -3266,6 +3290,7 @@
                                             ? h.JS_UNBOOKED_PRICE
                                             : (u?.lastPrice || a?.last_price)
                                         , a.quantity, a, h) : 0,
+                                h.JS_UNBOOKED_PNL = h.JS_REAL_PL?.netProfit || 0,
                                 h.uid = e,
                                 h.pnl = Object(o["c"])(r, 2),
                                 h.m2m = Object(o["c"])(l, 2),
@@ -3284,7 +3309,8 @@
                                     lastPrice: Object(o["b"])(d, f, !0),
                                     closePrice: Object(o["b"])(a.close_price, f, !0),
                                     // changePercent: Object(o["b"])(i, 2, !0) + `%  ${h.JS_REAL_PL?.netProfit || 0}`,
-                                    changePercent: (h.JS_BOOKED_PNL?.netProfit || 0) + (h.JS_REAL_PL?.unBookedPNL?.netProfit || h.JS_REAL_PL?.netProfit || 0),
+                                    changePercent: this.getRealPNLJS(h),
+                                    bookedPNL: h.JS_BOOKED_PNL?.netProfit || '',
                                     buyPrice: Object(o["b"])(a.buy_price, f, !0),
                                     sellPrice: Object(o["b"])(a.sell_price, f, !0),
                                     buyValue: Object(o["b"])(a.buy_value, 2, !0),
@@ -3317,6 +3343,12 @@
                                 s.push(h)
                         }
                         return s
+                    },
+                    getRealPNLJS(trade) {
+                        let pnl = parseFloat(
+                            (trade.JS_BOOKED_PNL?.netProfit || 0)
+                            + (trade.JS_REAL_PL?.netProfit || 0)).toFixed(2);
+                        return pnl;
                     },
                     showPositionsInfo(t) {
                         this.positionsInfo = !0,
@@ -3456,7 +3488,7 @@
                         }
                     },
                     getBrokerageInfo(buy_price, sell_price, trade) {
-                        const brkInfo =  this.calculate_ExactPL(buy_price, sell_price, trade.quantity, trade);
+                        const brkInfo = this.calculate_ExactPL(buy_price, sell_price, trade.quantity, trade);
 
                         return brkInfo;
                     },
@@ -3500,8 +3532,8 @@
                             let sell_quantity = Math.abs(t.sell_quantity);
 
                             let ordersToLoop = Math.abs((buy_quantity + sell_quantity) - Math.abs(t.quantity));
-                            
-                            if(ordersToLoop ===0 )return null;
+
+                            if (ordersToLoop === 0) return null;
                             const lotSize = t.tradingsymbol.includes("BANKNIFTY") ? 15 : 50;
                             let numberOfOrders = ordersToLoop / lotSize;
                             let buyAveragePrice = 0;
