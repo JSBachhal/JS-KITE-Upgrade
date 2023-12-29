@@ -2326,7 +2326,7 @@
                             class: [e.row.style.pnl, t.positionsColumnStyles.pnl]
                         }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "), s("td", {
                             class: [e.row.style.changePercent, t.positionsColumnStyles.changePercent],
-                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.JS_UNBOOKED_PNL + ' ' + e.row.JS_BOOKED_PNL?.netProfit + '=' + e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
+                        }, [0 !== e.row.formatted.averagePrice ? s("span", [t._v(t._s(e.row.formatted.changePercent))]) : s("span", [t._v("N/A")])])]
                     }
                 }], null, !1, 1032869863)
             }, [t._v(" "), s("tr", {
