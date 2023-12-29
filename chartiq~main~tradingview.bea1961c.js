@@ -2995,7 +2995,7 @@
                             sort: !0,
                             class: this.positionsColumnStyles.changePercent
                         }
-                    ],
+                        ],
                         this.$events.on("refetchData:" + h["b"], this.fetchPositions)
                 },
                 beforeDestroy() {
@@ -3037,7 +3037,8 @@
                             return this.positions.net.filter(t => 0 !== t.quantity).length
                     },
                     realNetPnlJSMode() {
-                        const realPnl = this.netData && this.netData.length > 0 ? this.netData.reduce((t, e) => t + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                        const realPnl = this.netData && this.netData.length > 0
+                            ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
                         return parseFloat(realPnl).toFixed(2);
                     },
                     netPnl() {
@@ -3089,6 +3090,9 @@
                     },
                     calculate_ExactPL(bp, sp, qty, h, _unBookedPNL) {
                         // console.log(h.tradingsymbol,`${qty ? 'OPEN : ':'CLOSED : '}`, h)
+                        if(h.tradingsymbol.includes('FUT')){
+                            return this.cal_futures(bp, sp, qty, h, _unBookedPNL);
+                        }
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
@@ -3141,14 +3145,11 @@
                         let netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-                        const unBookedPNL=_unBookedPNL.JS_UNBOOKED_PRICE? this.calculate_ExactPL(
-                            h.quantity>0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
-                            h.quantity<0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
-                            h.quantity,h):null;
+                        
 
-                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0,unBookedPNL };
+                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
                     },
-                    cal_futures(bp, sp, qty, h,_unBookedPNL) {
+                    cal_futures(bp, sp, qty, h, _unBookedPNL) {
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
@@ -3192,12 +3193,9 @@
                         var netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
-                        const unBookedPNL=_unBookedPNL.JS_UNBOOKED_PRICE? this.calculate_ExactPL(
-                            h.quantity>0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
-                            h.quantity<0?_unBookedPNL.JS_UNBOOKED_PRICE:0,
-                            h.quantity,h):null;
+                       
 
-                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0,unBookedPNL };
+                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
                     },
                     initUpdateTimer() {
                         this.clearUpdateTimer();
@@ -3253,13 +3251,21 @@
                                 0 !== a.average_price && (i = (d - a.average_price) / a.average_price * 100),
                                 0 === a.average_price && 0 !== a.quantity && (r = 0,
                                     l = 0),
-                                    h.JS_UNBOOKED_PRICE = this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL'),
-                                    h.JS_REAL_PL = h.tradingsymbol.includes('FUT')
-                                    ?
-                                    this.cal_futures(a.buy_price || (u && u.lastPrice || a.last_price), a.sell_price
-                                        || (u && u.lastPrice || a.last_price), a.quantity, a,h)
-                                    : this.calculate_ExactPL(a.buy_price || (u && u.lastPrice || a.last_price), a.sell_price
-                                        || (u && u.lastPrice || a.last_price), a.quantity, a,h),
+                                h.JS_UNBOOKED_PRICE = h.average_price
+                                ? this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL')
+                                : 0,
+                                h.isBuyOrder=a.quantity > 0,
+                                h.isSellOrder=a.quantity < 0,
+                                h.JS_BOOKED_PNL = this.getBookedPNLDeailsFromOrderDetails(h),
+                                h.JS_REAL_PL = h.JS_UNBOOKED_PRICE
+                                    ? this.calculate_ExactPL(
+                                        h.isBuyOrder
+                                            ? h.JS_UNBOOKED_PRICE
+                                            : (u?.lastPrice || a?.last_price),
+                                        h.isSellOrder
+                                            ? h.JS_UNBOOKED_PRICE
+                                            : (u?.lastPrice || a?.last_price)
+                                        , a.quantity, a, h) : 0,
                                 h.uid = e,
                                 h.pnl = Object(o["c"])(r, 2),
                                 h.m2m = Object(o["c"])(l, 2),
@@ -3278,7 +3284,7 @@
                                     lastPrice: Object(o["b"])(d, f, !0),
                                     closePrice: Object(o["b"])(a.close_price, f, !0),
                                     // changePercent: Object(o["b"])(i, 2, !0) + `%  ${h.JS_REAL_PL?.netProfit || 0}`,
-                                    changePercent: h.JS_REAL_PL?.unBookedPNL?.netProfit || h.JS_REAL_PL?.netProfit || 0,
+                                    changePercent: (h.JS_BOOKED_PNL?.netProfit || 0) + (h.JS_REAL_PL?.unBookedPNL?.netProfit || h.JS_REAL_PL?.netProfit || 0),
                                     buyPrice: Object(o["b"])(a.buy_price, f, !0),
                                     sellPrice: Object(o["b"])(a.sell_price, f, !0),
                                     buyValue: Object(o["b"])(a.buy_value, 2, !0),
@@ -3450,10 +3456,7 @@
                         }
                     },
                     getBrokerageInfo(buy_price, sell_price, trade) {
-                        const brkInfo = h.tradingsymbol.includes('FUT')
-                            ?
-                            this.cal_futures(buy_price, sell_price, trade.quantity, trade)
-                            : this.calculate_ExactPL(buy_price, sell_price, trade.quantity, trade);
+                        const brkInfo =  this.calculate_ExactPL(buy_price, sell_price, trade.quantity, trade);
 
                         return brkInfo;
                     },
@@ -3485,6 +3488,54 @@
 
                         }
                         return t.averagePrice;
+                    },
+                    getBookedPNLDeailsFromOrderDetails(t) {
+                        if (window.ORDER_INFO) {
+                            const completedOrders = window.ORDER_INFO.data.filter(f => f.status === "COMPLETE" &&
+                                (f.transaction_type === 'BUY' || f.transaction_type === 'SELL') &&
+                                f.instrument_token === t.instrument_token
+                                && f.tradingsymbol === t.tradingsymbol);
+
+                            let buy_quantity = Math.abs(t.buy_quantity);
+                            let sell_quantity = Math.abs(t.sell_quantity);
+
+                            let ordersToLoop = Math.abs((buy_quantity + sell_quantity) - Math.abs(t.quantity));
+                            
+                            if(ordersToLoop ===0 )return null;
+                            const lotSize = t.tradingsymbol.includes("BANKNIFTY") ? 15 : 50;
+                            let numberOfOrders = ordersToLoop / lotSize;
+                            let buyAveragePrice = 0;
+                            let sellAveragePrice = 0;
+
+                            if (completedOrders?.length) {
+                                for (const order of completedOrders.filter(f => f.transaction_type === 'BUY')) {
+                                    const multiplier = order.filled_quantity / lotSize;
+                                    buyAveragePrice += (order.average_price * multiplier);
+                                    ordersToLoop -= order.filled_quantity;
+                                    if (ordersToLoop === 0) {
+                                        break;
+                                    }
+                                }
+
+                                buyAveragePrice = buyAveragePrice / (numberOfOrders / 2);
+
+                                for (const order of completedOrders.filter(f => f.transaction_type === 'SELL')) {
+                                    const multiplier = order.filled_quantity / lotSize;
+                                    sellAveragePrice += (order.average_price * multiplier);
+                                    ordersToLoop -= order.filled_quantity;
+                                    if (ordersToLoop === 0) {
+                                        break;
+                                    }
+                                }
+
+                                sellAveragePrice = sellAveragePrice / (numberOfOrders / 2);
+                            }
+                            // console.log(completedOrders);
+
+                            const bookedPNL = this.calculate_ExactPL(buyAveragePrice, sellAveragePrice, buy_quantity, t)
+                            return bookedPNL;
+                        }
+                        return null
                     },
                     placeOrder(t) {
                         this.$events.emit(f["b"].EVENTS.ORDER_PLACE, t)
