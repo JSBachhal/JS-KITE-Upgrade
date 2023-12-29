@@ -3254,6 +3254,37 @@
 
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
                     },
+                    getTotalPNLForTrade(trade) {
+                        let pnl = parseFloat(
+                            (trade.JS_BOOKED_PNL?.netProfit || 0)
+                            + (trade.JS_REAL_PL?.netProfit || 0)).toFixed(2);
+                        return pnl;
+                    },
+                    getJSCustomProps(h, u, a) {
+                        const JS_UNBOOKED_PRICE = h.average_price
+                            ? this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL')
+                            : 0;
+                        const isBuyOrder = a.quantity > 0;
+                        const isSellOrder = a.quantity < 0;
+                        const JS_BOOKED_PNL = this.getBookedPNLDeailsFromOrderDetails(h);
+
+                        const JS_REAL_PL = JS_UNBOOKED_PRICE
+                            ? this.calculate_ExactPL(
+                                isBuyOrder
+                                    ? JS_UNBOOKED_PRICE
+                                    : (u?.lastPrice || a?.last_price),
+                                isSellOrder
+                                    ? JS_UNBOOKED_PRICE
+                                    : (u?.lastPrice || a?.last_price)
+                                , a.quantity, a, h) : 0;
+                        const JS_UNBOOKED_PNL = JS_REAL_PL?.netProfit || 0;
+
+                        h.JS_UNBOOKED_PRICE=JS_UNBOOKED_PRICE;
+                        h.JS_BOOKED_PNL=JS_BOOKED_PNL;
+                        h.JS_UNBOOKED_PNL=JS_UNBOOKED_PNL;
+                        h.JS_REAL_PL=JS_REAL_PL;
+                        return { JS_UNBOOKED_PRICE, JS_BOOKED_PNL, JS_UNBOOKED_PNL, JS_REAL_PL }
+                    },
                     updatePositions(t, e) {
                         // console.clear() ;
                         let s = []
@@ -3274,23 +3305,7 @@
                                 0 !== a.average_price && (i = (d - a.average_price) / a.average_price * 100),
                                 0 === a.average_price && 0 !== a.quantity && (r = 0,
                                     l = 0),
-                                h.JS_UNBOOKED_PRICE = h.average_price
-                                    ? this.getOrderDetailsFromOrders(a, a.quantity > 0 ? 'BUY' : 'SELL')
-                                    : 0,
-                                h.isBuyOrder = a.quantity > 0,
-                                h.isSellOrder = a.quantity < 0,
-                                h.JS_BOOKED_PNL = this.getBookedPNLDeailsFromOrderDetails(h),
-
-                                h.JS_REAL_PL = h.JS_UNBOOKED_PRICE
-                                    ? this.calculate_ExactPL(
-                                        h.isBuyOrder
-                                            ? h.JS_UNBOOKED_PRICE
-                                            : (u?.lastPrice || a?.last_price),
-                                        h.isSellOrder
-                                            ? h.JS_UNBOOKED_PRICE
-                                            : (u?.lastPrice || a?.last_price)
-                                        , a.quantity, a, h) : 0,
-                                h.JS_UNBOOKED_PNL = h.JS_REAL_PL?.netProfit || 0,
+                                        {...this.getJSCustomProps(h,u,a)}
                                 h.uid = e,
                                 h.pnl = Object(o["c"])(r, 2),
                                 h.m2m = Object(o["c"])(l, 2),
@@ -3308,9 +3323,7 @@
                                     m2m: Object(o["b"])(l, 2, !0),
                                     lastPrice: Object(o["b"])(d, f, !0),
                                     closePrice: Object(o["b"])(a.close_price, f, !0),
-                                    // changePercent: Object(o["b"])(i, 2, !0) + `%  ${h.JS_REAL_PL?.netProfit || 0}`,
-                                    changePercent: this.getRealPNLJS(h),
-                                    bookedPNL: h.JS_BOOKED_PNL?.netProfit || '',
+                                    changePercent: this.getTotalPNLForTrade(h),
                                     buyPrice: Object(o["b"])(a.buy_price, f, !0),
                                     sellPrice: Object(o["b"])(a.sell_price, f, !0),
                                     buyValue: Object(o["b"])(a.buy_value, 2, !0),
@@ -3344,12 +3357,8 @@
                         }
                         return s
                     },
-                    getRealPNLJS(trade) {
-                        let pnl = parseFloat(
-                            (trade.JS_BOOKED_PNL?.netProfit || 0)
-                            + (trade.JS_REAL_PL?.netProfit || 0)).toFixed(2);
-                        return pnl;
-                    },
+                   
+
                     showPositionsInfo(t) {
                         this.positionsInfo = !0,
                             this.currentPosition = t
@@ -3516,7 +3525,6 @@
 
                                 return averagePrice / numberOfOrders;
                             }
-                            // console.log(completedOrders);
 
                         }
                         return t.averagePrice;
