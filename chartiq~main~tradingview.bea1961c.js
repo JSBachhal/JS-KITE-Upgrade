@@ -3265,10 +3265,10 @@
                         if (buyOrSell === 'BUY') {
 
                             if (t.buy_quantity > 0) {
-                                sellPrice = this.getOrderDetailsFromOrders(t, 'SELL');
-                                const brokerageInfo = this.getBrokerageInfo(0, sellPrice, t);
+                                let sellPrice = this.getOrderDetailsFromOrders(t, 'SELL');
+                                // const brokerageInfo = this.getBrokerageInfo(0, sellPrice, t);
                                 exitPrice =
-                                    (sellPrice - (brokerageInfo?.breakeven || 0))
+                                    (sellPrice - (parseFloat(t?.JS_BREAKEVEN) || 0))
                             } else {
                                 if (t.JS_REAL_PL?.isInProfit) return n;
                                 else {
@@ -3283,10 +3283,10 @@
                         if (buyOrSell === 'SELL') {
 
                             if (t.sell_quantity > 0) {
-                                buyPrice = this.getOrderDetailsFromOrders(t, 'BUY');
-                                const brokerageInfo = this.getBrokerageInfo(buyPrice, 0, t);
+                                let buyPrice = this.getOrderDetailsFromOrders(t, 'BUY');
+                                // const brokerageInfo = this.getBrokerageInfo(buyPrice, 0, t);
                                 exitPrice =
-                                    (t.buyPrice + (brokerageInfo?.breakeven || 0))
+                                    (t.buyPrice + (parseFloat(t?.JS_BREAKEVEN) || 0))
                             } else {
                                 if (t.JS_REAL_PL?.isInProfit) return n;
                                 else {
@@ -3352,8 +3352,10 @@
                             if (completedOrders?.length) {
                                 const buyOrders = completedOrders.filter(f => f.transaction_type === 'BUY');
                                 const sellOrders = completedOrders.filter(f => f.transaction_type === 'SELL');
+                                    let buyOrderNumbers=0;
                                 for (const order of buyOrders) {
                                     const multiplier = order.filled_quantity / lotSize;
+                                        buyOrderNumbers +=multiplier;
                                     buyAveragePrice += (order.average_price * multiplier);
                                     ordersToLoop -= order.filled_quantity;
                                     if (ordersToLoop === 0) {
@@ -3362,11 +3364,13 @@
                                 }
 
                                 buyAveragePrice = buyOrders.length
-                                    ? buyAveragePrice / (numberOfOrders / 2)
+                                    ? buyAveragePrice / (buyOrderNumbers)
                                     : t.buy_price;
 
+                                      let sellOrderNumbers=0;
                                 for (const order of sellOrders) {
                                     const multiplier = order.filled_quantity / lotSize;
+                                        sellOrderNumbers+= multiplier;
                                     sellAveragePrice += (order.average_price * multiplier);
                                     ordersToLoop -= order.filled_quantity;
                                     if (ordersToLoop === 0) {
@@ -3375,7 +3379,7 @@
                                 }
 
                                 sellAveragePrice = sellOrders.length
-                                    ? sellAveragePrice / (numberOfOrders / 2)
+                                    ? sellAveragePrice / (sellOrderNumbers)
                                     : t.sell_price;
                             }
                             // console.log(completedOrders);
@@ -3698,7 +3702,7 @@
                                     transactionType: s,
                                     quantity: Math.abs(t.quantity),
                                     product: t.product,
-                                    orderType: f["b"].ORDER_TYPE.MARKET,
+                                    orderType: f["b"].ORDER_TYPE.LIMIT,
                                     variety: f["b"].VARIETY.REGULAR,
                                     instrument_token: t.instrument_token,
                                     price: this.calCustomExitPrice(s, n, t),
