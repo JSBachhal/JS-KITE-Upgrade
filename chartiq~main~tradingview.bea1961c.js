@@ -2111,25 +2111,29 @@
                                 { class: { 'change-percent': !0 } },
                                 [
                                     s("tr", [
-                                        s("td",
-                                            [
-                                                s("span", { class: { "min-width-JS": !0 } }, [t._v("UnBooked")]),
-                                                s("span", { class: [e.row.style.JS_UNBOOKED_PNL] }, [t._v(' = ' + (e.row.JS_UNBOOKED_PNL || '0'))]),
-                                            ])
+                                        s("td", [t._v("UnBooked")]),
+                                        s("td", [t._v("Booked")]),
+                                        s("td", [t._v("Total")])
                                     ]),
+
                                     s("tr", [
                                         s("td",
                                             [
-                                                s("span", { class: { "min-width-JS": !0 } }, [t._v("Booked")]),
+
+                                                s("span", { class: [e.row.style.JS_UNBOOKED_PNL] },
+                                                    [t._v((e.row.JS_UNBOOKED_PNL || '0'))]),
+                                            ]),
+
+                                        s("td",
+                                            [
+
                                                 s("span",
                                                     { class: [e.row.style.JS_BOOKED_PNL] },
-                                                    [t._v(' = ' + (e.row.JS_BOOKED_PNL?.netProfit || '0'))]),
+                                                    [t._v((e.row.JS_BOOKED_PNL?.netProfit || '0'))]),
                                             ]),
-                                    ]),
-                                    s("tr", [
+
                                         s("td",
                                             [
-                                                s("span", { class: { "min-width-JS": !0 } }, [t._v("Total  PNL")]),
                                                 s("span",
                                                     {
 
@@ -2142,7 +2146,7 @@
                                                         },
                                                         class: [e.row.style.JS_TOTAL_PNL]
                                                     },
-                                                    [t._v(' = ' + (e.row.formatted.changePercent || '0'))]),
+                                                    [t._v((e.row.formatted.changePercent || '0'))]),
                                             ]),
                                     ])
                                 ]
@@ -2238,6 +2242,7 @@
             },
                 [s("table",
                     [
+
                         s("tr", [
                             s("td", {
                                 class: {
@@ -3352,10 +3357,10 @@
                             if (completedOrders?.length) {
                                 const buyOrders = completedOrders.filter(f => f.transaction_type === 'BUY');
                                 const sellOrders = completedOrders.filter(f => f.transaction_type === 'SELL');
-                                    let buyOrderNumbers=0;
+                                let buyOrderNumbers = 0;
                                 for (const order of buyOrders) {
                                     const multiplier = order.filled_quantity / lotSize;
-                                        buyOrderNumbers +=multiplier;
+                                    buyOrderNumbers += multiplier;
                                     buyAveragePrice += (order.average_price * multiplier);
                                     ordersToLoop -= order.filled_quantity;
                                     if (ordersToLoop === 0) {
@@ -3367,10 +3372,10 @@
                                     ? buyAveragePrice / (buyOrderNumbers)
                                     : t.buy_price;
 
-                                      let sellOrderNumbers=0;
+                                let sellOrderNumbers = 0;
                                 for (const order of sellOrders) {
                                     const multiplier = order.filled_quantity / lotSize;
-                                        sellOrderNumbers+= multiplier;
+                                    sellOrderNumbers += multiplier;
                                     sellAveragePrice += (order.average_price * multiplier);
                                     ordersToLoop -= order.filled_quantity;
                                     if (ordersToLoop === 0) {
@@ -3510,7 +3515,9 @@
                             : 0;
                         const isBuyOrder = a.quantity > 0;
                         const isSellOrder = a.quantity < 0;
-                        const JS_BOOKED_PNL = this.getBookedPNLDeailsFromOrderDetails(h);
+                        const JS_BOOKED_PNL = h.quantity === 0 ?
+                            this.calculate_ExactPL(h.buy_price, h.sell_price, h.buy_quantity, h)
+                            : this.getBookedPNLDeailsFromOrderDetails(h);
 
                         const JS_REAL_PL = JS_UNBOOKED_PRICE
                             ? this.calculate_ExactPL(
