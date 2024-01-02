@@ -1750,10 +1750,47 @@
             }, [s("header", {
                 staticClass: "row data-table-header"
             }, [s("h3", {
-                staticClass: "page-title small"
+                staticClass: "page-title small",
+                style: { 'display': 'flex' }
             }, [t._v("\n\t\t\t\tPositions\n\n\t\t\t\t"), t._v(" "), s("span", {
-                staticClass: "count"
-            }, [t._v("(" + t._s(t.positions.net.length) + ")")]), t._v(" "), t.positionsConstraints.showErrorIcon ? s("span", {
+                staticClass: "count",
+                style: { 'display': 'flex' }
+            }, [t._v("(" + t._s(t.positions.net.length) + ") ")
+                ,
+            s("table", { style: { 'font-size': '13px', 'margin-left': '1em' } },
+                [
+                    s("tr", [
+                        s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('UnBooked')]),
+                        s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Booked')]),
+                        s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Total')])
+                    ]),
+                    s("tr", [
+                        s("td", {
+                            style: { 'display': 'inline-block', 'width': '100px' },
+                            class: {
+                                "text-green": t.realNetUnBookedPnl > 0,
+                                "text-red": t.realNetUnBookedPnl < 0,
+                            }
+                        }, [t._v(t.realNetUnBookedPnl)]),
+                        s("td", {
+                            style: { 'display': 'inline-block', 'width': '100px' },
+                            class: {
+                                "text-green": t.realNetBookedPnl > 0,
+                                "text-red": t.realNetBookedPnl < 0,
+                            }
+                        }, [t._v(t.realNetBookedPnl)]),
+
+                        s("td", {
+                            style: { 'display': 'inline-block', 'width': '100px' },
+                            class: {
+                                "text-green": t.realNetTotalPnl > 0,
+                                "text-red": t.realNetTotalPnl < 0,
+                            }
+                        }, [t._v(t.realNetTotalPnl)]),
+                    ])
+                ])
+
+            ]), t._v(" "), t.positionsConstraints.showErrorIcon ? s("span", {
                 directives: [{
                     name: "tooltip",
                     rawName: "v-tooltip"
