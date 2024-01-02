@@ -1757,38 +1757,7 @@
                 style: { 'display': 'flex' }
             }, [t._v("(" + t._s(t.positions.net.length) + ") ")
                 ,
-            s("table", { style: { 'font-size': '13px', 'margin-left': '1em' } },
-                [
-                    s("tr", [
-                        s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('UnBooked')]),
-                        s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Booked')]),
-                        s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Total')])
-                    ]),
-                    s("tr", [
-                        s("td", {
-                            style: { 'display': 'inline-block', 'width': '100px' },
-                            class: {
-                                "text-green": t.realNetUnBookedPnl > 0,
-                                "text-red": t.realNetUnBookedPnl < 0,
-                            }
-                        }, [t._v(t.realNetUnBookedPnl)]),
-                        s("td", {
-                            style: { 'display': 'inline-block', 'width': '100px' },
-                            class: {
-                                "text-green": t.realNetBookedPnl > 0,
-                                "text-red": t.realNetBookedPnl < 0,
-                            }
-                        }, [t._v(t.realNetBookedPnl)]),
 
-                        s("td", {
-                            style: { 'display': 'inline-block', 'width': '100px' },
-                            class: {
-                                "text-green": t.realNetTotalPnl > 0,
-                                "text-red": t.realNetTotalPnl < 0,
-                            }
-                        }, [t._v(t.realNetTotalPnl)]),
-                    ])
-                ])
 
             ]), t._v(" "), t.positionsConstraints.showErrorIcon ? s("span", {
                 directives: [{
@@ -2141,7 +2110,10 @@
                             class: [e.row.style.lastPrice, t.positionsColumnStyles.lastPrice]
                         }, [t._v("\n\t\t\t\t\t\t" + t._s(e.row.formatted.lastPrice) + "\n\t\t\t\t\t")]), t._v(" "), s("td", {
                             class: [e.row.style.pnl, t.positionsColumnStyles.pnl]
-                        }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) : s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "),
+                        }, [0 === e.row.average_price && 0 !== e.row.quantity ? s("span", [t._v("N/A")]) :
+                            s("span", [t._v(t._s(e.row.formatted.pnl))])]), t._v(" "),
+
+                        // JS Custom Feature
                         s("td", {
                         }, [
                             s("table",
@@ -2266,6 +2238,8 @@
                     "text-red": t.netPnl < 0
                 }
             }, [t.netPnl > 0 ? s("span", [t._v("+")]) : t._e(), t._v(t._s(t._f("inrFormat")(t.netPnl, 2, !0)) + "\n\t\t\t\t\t")]), t._v(" "),
+
+            // JS Custom Feature
             s("td", {
                 staticClass: "text-right",
                 class: {
@@ -2277,35 +2251,41 @@
                     colspan: "2"
                 }
             },
-                [s("table",
-                    [
+                [
 
-                        s("tr", [
-                            s("td", {
-                                class: {
-                                    "text-green": t.realNetUnBookedPnl > 0,
-                                    "text-red": t.realNetUnBookedPnl < 0,
-                                }
-                            }, [t._v('UnBooked = ' + t.realNetUnBookedPnl)])
-                        ]),
-                        s("tr", [
-                            s("td", {
-                                class: {
-                                    "text-green": t.realNetBookedPnl > 0,
-                                    "text-red": t.realNetBookedPnl < 0,
-                                }
-                            }, [t._v('Booked      = ' + t.realNetBookedPnl)]),
-                        ]),
-                        s("tr", [
-                            s("td", {
-                                class: {
-                                    "text-green": t.realNetTotalPnl > 0,
-                                    "text-red": t.realNetTotalPnl < 0,
-                                }
-                            }, [t._v('Total  PNL  = ' + t.realNetTotalPnl)]),
+                    s("table", { style: { "width": "200px", "font-size": "13px", "margin-left": "1em", "position": "fixed", "top": "0", "left": "38%", "z-index": "999", "margin-top": "5px" } },
+                        [
+                            s("tr", [
+                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('UnBooked')]),
+                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Booked')]),
+                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Total')])
+                            ]),
+                            s("tr", [
+                                s("td", {
+                                    style: { 'display': 'inline-block', 'width': '100px' },
+                                    class: {
+                                        "text-green": t.realNetUnBookedPnl > 0,
+                                        "text-red": t.realNetUnBookedPnl < 0,
+                                    }
+                                }, [t._v(t.realNetUnBookedPnl)]),
+                                s("td", {
+                                    style: { 'display': 'inline-block', 'width': '100px' },
+                                    class: {
+                                        "text-green": t.realNetBookedPnl > 0,
+                                        "text-red": t.realNetBookedPnl < 0,
+                                    }
+                                }, [t._v(t.realNetBookedPnl)]),
+
+                                s("td", {
+                                    style: { 'display': 'inline-block', 'width': '100px' },
+                                    class: {
+                                        "text-green": t.realNetTotalPnl > 0,
+                                        "text-red": t.realNetTotalPnl < 0,
+                                    }
+                                }, [t._v(t.realNetTotalPnl)]),
+                            ])
                         ])
-                    ]
-                )]
+                ]
 
 
 
