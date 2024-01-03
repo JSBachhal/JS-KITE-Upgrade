@@ -2265,7 +2265,7 @@
                                 s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('UnBooked')]),
                                 s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Booked')]),
                                 s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Total')]),
-                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v(t.JS_HAS_SelectedPositions ? 'Selected Total' : '')]),
+                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Selected Total')]),
 
                             ]),
                             s("tr", [
