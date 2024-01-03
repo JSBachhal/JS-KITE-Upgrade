@@ -3440,6 +3440,9 @@
                         if (h.tradingsymbol.includes('FUT')) {
                             return this.cal_futures(bp, sp, qty, h, _unBookedPNL);
                         }
+                            if (h.product.includes('CNC')) {
+                            return this.cal_intra(bp, sp, qty, h );
+                        }
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
@@ -3494,6 +3497,55 @@
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
 
 
+                        return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
+                    },
+                    cal_intra(bp,sp,qty,h) {
+                        bp = parseFloat(bp.toString());
+                        sp = parseFloat(sp.toString());
+                        qty = Math.abs(qty || h.buy_quantity);
+                        const symbol = h.tradingsymbol;
+                        const buy_quantity = h.buy_quantity;
+                        const sell_quantity = h.sell_quantity;
+
+                        if (isNaN(qty) || (isNaN(bp) && isNaN(sp))) {
+
+                            return;
+                        }
+                        if (isNaN(bp) || bp == 0) {
+                            bp = 0;
+                            bse_tran_charge_buy = 0;
+                        }
+                        if (isNaN(sp) || sp == 0) {
+                            sp = 0;
+                            bse_tran_charge_sell = 0;
+                        }
+                        let brokerage_buy = ((bp * qty * 0.0003) > 20) ? 20 : parseFloat(parseFloat(bp * qty * 0.0003).toFixed(2));
+                        let brokerage_sell = ((sp * qty * 0.0003) > 20) ? 20 : parseFloat(parseFloat(sp * qty * 0.0003).toFixed(2));
+                        let brokerage = parseFloat(parseFloat(brokerage_buy + brokerage_sell).toFixed(2));
+
+                        let turnover = parseFloat(parseFloat((bp + sp) * qty).toFixed(2));
+
+                        let stt_total = Math.round(parseFloat(parseFloat((sp * qty) * 0.00025).toFixed(2)));
+                        let sebi_charges = parseFloat(parseFloat(turnover * 0.000001).toFixed(2));
+
+                        let exc_trans_charge = parseFloat(parseFloat(0.0000325 * turnover).toFixed(2))
+                        let nse_ipft = parseFloat(parseFloat(0.000001 * turnover).toFixed(2))
+                        let cc = 0;
+                        exc_trans_charge = parseFloat(parseFloat(exc_trans_charge + nse_ipft).toFixed(2));
+
+                        let stax = parseFloat(parseFloat(0.18 * (brokerage + exc_trans_charge + sebi_charges)).toFixed(2));
+
+                        let stamp_charges = Math.round(parseFloat(parseFloat((bp * qty) * 0.00003).toFixed(2)));
+
+                        let total_tax = parseFloat(parseFloat(brokerage + stt_total + exc_trans_charge + cc + stax + sebi_charges + stamp_charges).toFixed(2));
+
+                        let breakeven = parseFloat(parseFloat(total_tax / qty).toFixed(2));
+                        breakeven = isNaN(breakeven) ? 0 : breakeven
+
+                       
+                        let netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
+
+                        let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
                     },
                     cal_futures(bp, sp, qty, h, _unBookedPNL) {
