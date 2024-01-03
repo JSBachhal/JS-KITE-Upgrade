@@ -2123,6 +2123,7 @@
                                         s("td", [t._v("UnBooked")]),
                                         s("td", [t._v("Booked")]),
                                         s("td", [t._v("Total")])
+
                                     ]),
 
                                     s("tr", [
@@ -2253,12 +2254,19 @@
             },
                 [
 
-                    s("table", { style: { "width": "200px", "font-size": "13px", "margin-left": "1em", "position": "fixed", "top": "0", "left": "38%", "z-index": "999", "margin-top": "5px" } },
+                    s("table", {
+                        style: {
+                            "background": "#111", "width": "200px", "font-size": "13px",
+                            "margin-left": "1em", "position": "fixed", "top": "0", "left": "31%", "z-index": "999", "margin-top": "8px"
+                        }
+                    },
                         [
                             s("tr", [
                                 s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('UnBooked')]),
                                 s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Booked')]),
-                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Total')])
+                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v('Total')]),
+                                s("td", { style: { 'display': 'inline-block', 'width': '100px' } }, [t._v(t.JS_HAS_SelectedPositions ? 'Selected Total' : '')]),
+
                             ]),
                             s("tr", [
                                 s("td", {
@@ -2283,6 +2291,13 @@
                                         "text-red": t.realNetTotalPnl < 0,
                                     }
                                 }, [t._v(t.realNetTotalPnl)]),
+                                s("td", {
+                                    style: { 'display': 'inline-block', 'width': '100px' },
+                                    class: {
+                                        "text-green": t.JS_SelectedPositions_Total > 0,
+                                        "text-red": t.JS_SelectedPositions_Total < 0,
+                                    }
+                                }, [t._v(t.JS_SelectedPositions_Total)]),
                             ])
                         ])
                 ]
@@ -3180,6 +3195,15 @@
                             ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
                         return realPnl;
+                    },
+                    JS_HAS_SelectedPositions() {
+                        return !!this.selectedPositions.length;
+                    },
+                    JS_SelectedPositions_Total() {
+                        let realSelectedPnl = this.selectedPositions && this.selectedPositions.length > 0
+                            ? this.selectedPositions.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                        realSelectedPnl = parseFloat(realSelectedPnl).toFixed(2);
+                        return realSelectedPnl;
                     },
 
                     netPnl() {
