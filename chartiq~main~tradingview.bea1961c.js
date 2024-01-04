@@ -2298,7 +2298,25 @@
                                         "text-red": t.JS_SelectedPositions_Total < 0,
                                     }
                                 }, [t._v(t.JS_SelectedPositions_Total)]),
-                            ])
+                            ]),
+                            s("tr", [
+                                s("td", {
+                                    style: { 'display': 'inline-block', 'width': '150px' },
+                                    class: {
+                                        "text-green": t.JS_RealNetBookedPnlPercentageOfCapital > 0,
+                                        "text-red": t.JS_RealNetBookedPnlPercentageOfCapital < 0,
+                                    }
+                                },
+                                    [t._v('ROC = ' + t.JS_RealNetBookedPnlPercentageOfCapital)]),
+                                s("td", {
+                                    class: {
+                                        "text-red": true,
+                                    }, style: { 'display': 'inline-block', 'width': '150px' }
+                                },
+                                    [t._v(t.JS_CAPITAL_PROTECTION_MESSAGE)]),
+
+                            ]),
+
                         ])
                 ]
 
@@ -3205,7 +3223,13 @@
                         realSelectedPnl = parseFloat(realSelectedPnl).toFixed(2);
                         return realSelectedPnl;
                     },
-
+                    JS_RealNetBookedPnlPercentageOfCapital() {
+                        return this.realNetBookedPnlPercentageOfCapital();
+                    },
+                    JS_CAPITAL_PROTECTION_MESSAGE() {
+                        const pnlPercentage = parseFloat(this.realNetBookedPnlPercentageOfCapital());
+                        return Math.abs(pnlPercentage) > 1 ? 'STOP TRADING NOW PLEASE' : 'DONT OVER TRADE'
+                    },
                     netPnl() {
                         return this.netData && this.netData.length > 0 ? this.netData.reduce((t, e) => t + e.pnl, 0) : 0
                     },
@@ -3296,13 +3320,26 @@
                     },
                     realNetBookedPnl() {
                         let realPnl = this.netData && this.netData.length > 0
-                            ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0), 0) : 0
+                            ? this.netData.reduce((t, e) => t + (e.JS_BOOKED_PNL?.netProfit || 0), 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
                         return realPnl;
                     },
+                    realNetBookedPnlPercentageOfCapital() {
+                        let realPnl = this.netData && this.netData.length > 0
+                            ? this.netData.reduce((t, e) => t + (e.JS_BOOKED_PNL?.netProfit || 0), 0) : 0
+                        realPnl = parseFloat(realPnl).toFixed(2);
+                        let PNLPercentageOfCapital = realPnl;
+                        if (window.JS_TOTAL_CAPITAL) {
+                            const totalCpital = (window.JS_TOTAL_CAPITAL.data.equity.available.opening_balance || 0) +
+                                (window.JS_TOTAL_CAPITAL.data.equity.available.collateral || 0);
+                            PNLPercentageOfCapital = parseFloat((parseFloat(realPnl) / parseFloat(totalCpital)) * 100).toFixed(2);
+
+                        }
+                        return PNLPercentageOfCapital;
+                    },
                     realNetTotalPnl() {
                         let realPnl = this.netData && this.netData.length > 0
-                            ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                            ? this.netData.reduce((t, e) => t + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
                         return realPnl;
                     },
@@ -3440,8 +3477,8 @@
                         if (h.tradingsymbol.includes('FUT')) {
                             return this.cal_futures(bp, sp, qty, h, _unBookedPNL);
                         }
-                            if (h.product.includes('CNC')) {
-                            return this.cal_intra(bp, sp, qty, h );
+                        if (h.product.includes('CNC')) {
+                            return this.cal_intra(bp, sp, qty, h);
                         }
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
@@ -3499,7 +3536,7 @@
 
                         return { actualNetProfit, netProfit, breakeven: breakeven + 1, isInProfit: parseFloat(netProfit) > 0 };
                     },
-                    cal_intra(bp,sp,qty,h) {
+                    cal_intra(bp, sp, qty, h) {
                         bp = parseFloat(bp.toString());
                         sp = parseFloat(sp.toString());
                         qty = Math.abs(qty || h.buy_quantity);
@@ -3542,7 +3579,7 @@
                         let breakeven = parseFloat(parseFloat(total_tax / qty).toFixed(2));
                         breakeven = isNaN(breakeven) ? 0 : breakeven
 
-                       
+
                         let netProfit = parseFloat(parseFloat(((sp - bp) * qty) - total_tax).toFixed(2));
 
                         let actualNetProfit = ` _ ${parseFloat(netProfit) > 0 ? ' + ' : ' '}${netProfit}`;
