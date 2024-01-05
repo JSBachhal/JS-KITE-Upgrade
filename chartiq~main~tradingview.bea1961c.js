@@ -3198,19 +3198,34 @@
                     },
                     realNetUnBookedPnl() {
                         let realPnl = this.netData && this.netData.length > 0
-                            ? this.netData.reduce((t, e) => t + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                            ? this.netData.reduce((t, e) => {
+                                const pnl = e.product === 'CNC'
+                                    ? t + 0
+                                    : t + (e.JS_REAL_PL?.netProfit || 0)
+                                return pnl
+                            }, 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
                         return realPnl;
                     },
                     realNetBookedPnl() {
                         let realPnl = this.netData && this.netData.length > 0
-                            ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0), 0) : 0
+                            ? this.netData.reduce((t, e) => {
+                                const pnl = e.product === 'CNC'
+                                    ? t + 0
+                                    : t + (e.JS_BOOKED_PNL?.netProfit || 0)
+                                return pnl
+                            }, 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
                         return realPnl;
                     },
                     realNetTotalPnl() {
                         let realPnl = this.netData && this.netData.length > 0
-                            ? this.netData.reduce((t, e) => t + + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0), 0) : 0
+                            ? this.netData.reduce((t, e) => {
+                                const pnl = e.product === 'CNC'
+                                    ? t + 0
+                                    : t + (e.JS_BOOKED_PNL?.netProfit || 0) + (e.JS_REAL_PL?.netProfit || 0)
+                                return pnl;
+                            }, 0) : 0
                         realPnl = parseFloat(realPnl).toFixed(2);
                         return realPnl;
                     },
