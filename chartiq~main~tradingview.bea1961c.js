@@ -2301,7 +2301,7 @@
                             ]),
                             s("tr", [
                                 s("td", {
-                                    style: { 'display': 'inline-block', 'width': '150px' },
+                                    style: { 'display': 'inline-block', 'width': '120px' },
                                     class: {
                                         "text-green": t.JS_RealNetBookedPnlPercentageOfCapital > 0,
                                         "text-red": t.JS_RealNetBookedPnlPercentageOfCapital < 0,
@@ -3242,8 +3242,9 @@
                         return this.realNetBookedPnlPercentageOfCapital();
                     },
                     JS_CAPITAL_PROTECTION_MESSAGE() {
+                            window.ROC_TARGET = 1;
                         const pnlPercentage = parseFloat(this.realNetBookedPnlPercentageOfCapital());
-                        return Math.abs(pnlPercentage) > 1 ? 'STOP TRADING NOW PLEASE' : 'DONT OVER TRADE'
+                        return Math.abs(pnlPercentage) > window.ROC_TARGET ? `STOP TRADING PLEASE ROC TARGET=${window.ROC_TARGET}` : `DONT OVER TRADE ROC TARGET=${window.ROC_TARGET})`
                     },
                     netPnl() {
                         return this.netData && this.netData.length > 0 ? this.netData.reduce((t, e) => t + e.pnl, 0) : 0
