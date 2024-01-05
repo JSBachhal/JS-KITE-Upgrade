@@ -3242,7 +3242,7 @@
                         return this.realNetBookedPnlPercentageOfCapital();
                     },
                     JS_CAPITAL_PROTECTION_MESSAGE() {
-                            window.ROC_TARGET = 1;
+                            window.ROC_TARGET =  window.ROC_TARGET? window.ROC_TARGET : 1;
                         const pnlPercentage = parseFloat(this.realNetBookedPnlPercentageOfCapital());
                         return Math.abs(pnlPercentage) > window.ROC_TARGET ? `STOP TRADING PLEASE ROC TARGET=${window.ROC_TARGET}` : `DONT OVER TRADE ROC TARGET=${window.ROC_TARGET})`
                     },
